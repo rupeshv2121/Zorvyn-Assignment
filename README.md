@@ -2,12 +2,6 @@
 
 A production-quality Finance Dashboard system with clean architecture, role-based access control (RBAC), and modern tech stack.
 
-![Tech Stack](https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)
-![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)
-![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
-![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white)
-![Tailwind](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
-
 ---
 
 ## 🎯 Project Overview
@@ -16,17 +10,17 @@ This is a **full-stack finance dashboard** that allows users to manage financial
 
 ### Key Features
 
-✨ **User Authentication** - JWT-based auth with refresh tokens  
-🔐 **Role-Based Access Control** - Viewer, Analyst, Admin roles  
-📊 **Financial Analytics** - Dashboard with charts and insights  
-💸 **Record Management** - CRUD operations for income/expense  
-👥 **User Management** - Admin panel for user administration  
-📱 **Responsive Design** - Mobile-first, works on all devices  
-🎨 **Modern UI** - Clean Tailwind CSS design  
+**User Authentication** - JWT-based auth with refresh tokens  
+**Role-Based Access Control** - Viewer, Analyst, Admin roles  
+**Financial Analytics** - Dashboard with charts and insights  
+**Record Management** - CRUD operations for income/expense  
+**User Management** - Admin panel for user administration  
+**Responsive Design** - Mobile-first, works on all devices  
+**Modern UI** - Clean Tailwind CSS design  
 
 ---
 
-## 🏗️ Architecture
+## Architecture
 
 ### Tech Stack
 
@@ -54,29 +48,29 @@ This is a **full-stack finance dashboard** that allows users to manage financial
 
 ```
 ┌─────────────────────────────────────┐
-│         Frontend (React)            │
+│           Frontend (React)          │
 │                                     │
-│  Pages → Components → Hooks        │
-│     ↓                               │
-│  React Query ← API Client          │
+│      Pages → Components → Hooks     │
+│                 ↓                   │
+│     React Query ← API Client        │
 └─────────────────────────────────────┘
                  ↓ REST API
 ┌─────────────────────────────────────┐
-│      Backend (Express)              │
-│                                     │
-│  Routes → Controllers               │
-│     ↓                               │
-│  Middleware (Auth, RBAC)           │
-│     ↓                               │
-│  Services (Business Logic)         │
-│     ↓                               │
-│  Repositories (Data Access)        │
+│           Backend (Express)         │
+│                  ↓                  │
+│       Routes → Controllers          │
+│                  ↓                  │
+│       Middleware (Auth, RBAC)       │
+│                  ↓                  │
+│       Services (Business Logic)     │
+│                  ↓                  │
+│       Repositories (Data Access)    │
 └─────────────────────────────────────┘
-                 ↓
-        ┌──────────────┐
-        │   Supabase   │
-        │  PostgreSQL  │
-        └──────────────┘
+                   ↓
+            ┌──────────────┐
+            │   Supabase   │
+            │  PostgreSQL  │
+            └──────────────┘
 ```
 
 ---
@@ -127,35 +121,22 @@ Zorvyn/
 
 ### Setup Instructions
 
-**See [QUICK_START.md](./QUICK_START.md) for detailed setup guide.**
-
 Quick version:
 
 ```bash
 # 1. Backend setup
 cd backend
-node create-structure.js
 npm install
 cp .env.example .env
 # Edit .env with Supabase credentials
-# Run schema.sql in Supabase SQL Editor
 npm run dev
 
 # 2. Frontend setup
 cd ../frontend
-node create-structure.js
 npm install
 cp .env.example .env
 npm run dev
 ```
-
-### Test Credentials
-
-After running `seed.sql`:
-
-- **Admin:** admin@example.com / password123
-- **Analyst:** analyst@example.com / password123
-- **Viewer:** viewer@example.com / password123
 
 ---
 
@@ -183,7 +164,7 @@ Frontend conditionally renders based on role:
 
 ---
 
-## 📊 API Endpoints
+## API Endpoints
 
 ### Authentication
 - `POST /api/auth/register` - Register new user
@@ -240,17 +221,6 @@ Frontend conditionally renders based on role:
 
 ---
 
-## 🎨 Screenshots
-
-*(Add screenshots here after implementation)*
-
-- Login Page
-- Dashboard with Charts
-- Records Management
-- Admin Panel
-
----
-
 ## 🚢 Deployment
 
 ### Backend (Vercel/Railway/Render)
@@ -283,67 +253,25 @@ vercel --prod
 
 ### Manual Testing
 1. Start both backend and frontend
-2. Login with test users
+2. Login with users
 3. Test each role's permissions
 4. Create/edit/delete records
 5. View dashboard analytics
 
 ### Test Scenarios
-- ✅ Authentication flow
-- ✅ Role-based access control
-- ✅ CRUD operations
-- ✅ Dashboard aggregations
-- ✅ Filtering and pagination
-- ✅ Error handling
+- Authentication flow
+- Role-based access control
+- CRUD operations
+- Dashboard aggregations
+- Filtering and pagination
+- Error handling
 
 ---
 
 ## 📚 Documentation
 
-- **[QUICK_START.md](./QUICK_START.md)** - Setup guide
 - **[backend/README.md](./backend/README.md)** - Backend docs
 - **[frontend/README.md](./frontend/README.md)** - Frontend docs
-- **[SETUP_COMPLETE.md](./SETUP_COMPLETE.md)** - Architecture details
-
----
-
-## 🛠️ Development Workflow
-
-### Adding a New Feature
-
-1. **Backend:**
-   - Add validation schema in `validations/`
-   - Create repository method in `repositories/`
-   - Add business logic in `services/`
-   - Create controller in `controllers/`
-   - Wire route in `routes/`
-
-2. **Frontend:**
-   - Add API call in `services/api/`
-   - Create React Query hook in `hooks/`
-   - Build UI component in `components/`
-   - Add to page in `pages/`
-
-### Code Style
-
-- TypeScript strict mode
-- Functional components (React)
-- Async/await over promises
-- Descriptive variable names
-- Comments only where needed
-
----
-
-## 📈 Future Enhancements
-
-- [ ] Dark mode toggle
-- [ ] Export data (CSV, PDF)
-- [ ] Email notifications
-- [ ] Budget planning features
-- [ ] Recurring transactions
-- [ ] Multi-currency support
-- [ ] Mobile app (React Native)
-- [ ] Real-time updates (WebSockets)
 
 ---
 
@@ -357,24 +285,9 @@ vercel --prod
 
 ---
 
-## 📝 License
-
-MIT License - See LICENSE file for details
-
----
-
 ## 👨‍💻 Author
 
 Built as a demonstration of production-quality full-stack development with clean architecture and best practices.
 
 ---
 
-## 🙏 Acknowledgments
-
-- Supabase for managed PostgreSQL
-- Vercel for deployment platform
-- Open source libraries and frameworks
-
----
-
-**Ready to build a production-quality finance dashboard! 🚀**
