@@ -1,11 +1,11 @@
 import React from 'react';
-import { Card } from '../common/Card';
 import { formatCurrency } from '../../utils';
+import { Card } from '../common/Card';
 
 interface SummaryCardProps {
   title: string;
   value: number;
-  icon: string;
+  icon: React.ReactNode;
   variant: 'income' | 'expense' | 'balance';
 }
 
@@ -24,7 +24,7 @@ export const SummaryCard: React.FC<SummaryCardProps> = ({ title, value, icon, va
           <p className="text-2xl font-bold mt-1">{formatCurrency(value)}</p>
         </div>
         <div className={`p-3 rounded-full ${colors[variant]}`}>
-          <span className="text-2xl">{icon}</span>
+          {icon}
         </div>
       </div>
     </Card>

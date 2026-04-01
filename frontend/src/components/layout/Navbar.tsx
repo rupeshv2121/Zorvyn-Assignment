@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { useAuthStore } from '../../store/authStore';
 import { useLogout } from '../../hooks/useAuth';
+import { useAuthStore } from '../../store/authStore';
 
 export const Navbar: React.FC = () => {
   const user = useAuthStore((state) => state.user);
@@ -17,7 +17,7 @@ export const Navbar: React.FC = () => {
             </Link>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-20 ">
             <div className="flex items-center gap-2">
               <span className="text-sm text-gray-600">{user?.email}</span>
               <span className="px-2 py-1 text-xs font-semibold rounded-full bg-primary-100 text-primary-800">
@@ -26,7 +26,7 @@ export const Navbar: React.FC = () => {
             </div>
             <button
               onClick={logout}
-              className="text-sm text-gray-700 hover:text-primary-600"
+              className="text-sm bg-red-500 p-2 rounded-xl text-white hover:text-primary-600"
             >
               Logout
             </button>

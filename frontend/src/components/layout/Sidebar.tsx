@@ -1,3 +1,4 @@
+import { LayoutDashboard, ReceiptPoundSterling, TrendingUpDown } from 'lucide-react';
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
@@ -6,9 +7,9 @@ export const Sidebar: React.FC = () => {
   const user = useAuthStore((state) => state.user);
 
   const links = [
-    { to: '/dashboard', label: 'Dashboard', icon: '📊', roles: ['viewer', 'analyst', 'admin'] },
-    { to: '/records', label: 'Records', icon: '💰', roles: ['analyst', 'admin'] },
-    { to: '/admin', label: 'User Management', icon: '👥', roles: ['admin'] },
+    { to: '/dashboard', label: 'Dashboard', icon: <LayoutDashboard className="w-6 h-6 text-blue-600" />, roles: ['viewer', 'analyst', 'admin'] },
+    { to: '/records', label: 'Records', icon: <ReceiptPoundSterling className="w-6 h-6 text-green-600" />, roles: ['analyst', 'admin'] },
+    { to: '/admin', label: 'User Management', icon: <TrendingUpDown className="w-6 h-6 text-blue-600" />, roles: ['admin'] },
   ];
 
   const filteredLinks = links.filter((link) => link.roles.includes(user?.role || ''));

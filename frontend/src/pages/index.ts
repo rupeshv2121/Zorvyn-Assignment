@@ -1,4 +1,5 @@
-export { LoginPage } from './LoginPage';
-export { DashboardPage } from './DashboardPage';
-export { RecordsPage } from './RecordsPage';
-export { AdminPage } from './AdminPage';
+export { AdminPage } from "./AdminPage";
+export { DashboardPage } from "./DashboardPage";
+export { LandingPage } from "./LandingPage";
+export { LoginPage } from "./LoginPage";
+export { RecordsPage } from "./RecordsPage";

@@ -1,7 +1,7 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+import { AdminPage, DashboardPage, LandingPage, LoginPage, RecordsPage } from './pages';
 import { useAuthStore } from './store/authStore';
-import { LoginPage, DashboardPage, RecordsPage, AdminPage } from './pages';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode; allowedRoles?: string[] }> = ({
   children,
@@ -54,7 +54,7 @@ export const Router: React.FC = () => {
             </ProtectedRoute>
           }
         />
-        <Route path="/" element={<Navigate to="/dashboard" replace />} />
+        <Route path="/" element={<LandingPage />} />
       </Routes>
     </BrowserRouter>
   );
