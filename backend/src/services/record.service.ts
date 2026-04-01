@@ -44,13 +44,35 @@ export class RecordService {
 
   async deleteRecord(id: string, userId: string): Promise<void> {
     // Verify record exists first
-    const record = await recordRepository.findById(id, userId);
+    const record = await recordRepository.findById(id, userId, false);
 
     if (!record) {
       throw new NotFoundError("Record not found");
     }
 
     await recordRepository.delete(id, userId);
+  }
+
+  async restoreRecord(id: string, userId: string): Promise<FinancialRecord> {
+    // Verify deleted record exists
+    const record = await recordRepository.findById(id, userId, true);
+
+    if (!record || !record.deleted_at) {
+      throw new NotFoundError("Deleted record not found");
+    }
+
+    return recordRepository.restore(id, userId);
+  }
+
+  async deleteRecordPermanently(id: string, userId: string): Promise<void> {
+    // Verify record exists first (including soft-deleted)
+    const record = await recordRepository.findById(id, userId, true);
+
+    if (!record) {
+      throw new NotFoundError("Record not found");
+    }
+
+    await recordRepository.hardDelete(id, userId);
   }
 }
 

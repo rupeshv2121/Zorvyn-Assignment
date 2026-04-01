@@ -34,4 +34,16 @@ router.delete(
   recordController.deleteRecord,
 );
 
+router.post(
+  "/:id/restore",
+  validate(deleteRecordSchema),
+  recordController.restoreRecord,
+);
+
+router.delete(
+  "/:id/permanent",
+  validate(deleteRecordSchema),
+  recordController.deleteRecordPermanently,
+);
+
 export default router;

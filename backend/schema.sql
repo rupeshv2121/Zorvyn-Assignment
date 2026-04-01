@@ -37,6 +37,7 @@ CREATE TABLE IF NOT EXISTS financial_records (
   category VARCHAR(100) NOT NULL,
   date DATE NOT NULL,
   notes TEXT,
+  deleted_at TIMESTAMP WITH TIME ZONE DEFAULT NULL,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
@@ -55,6 +56,9 @@ CREATE INDEX IF NOT EXISTS idx_records_type ON financial_records(type);
 
 -- Composite index for dashboard queries (user + type + date)
 CREATE INDEX IF NOT EXISTS idx_records_user_type_date ON financial_records(user_id, type, date DESC);
+
+-- Index for soft delete filtering (hide deleted records from queries)
+CREATE INDEX IF NOT EXISTS idx_records_deleted_at ON financial_records(deleted_at);
 
 -- =============================================
 -- TRIGGERS FOR UPDATED_AT

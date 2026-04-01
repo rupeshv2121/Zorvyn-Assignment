@@ -8,7 +8,8 @@ export class DashboardRepository {
     const { data, error } = await this.db
       .from("financial_records")
       .select("type, amount")
-      .eq("user_id", userId);
+      .eq("user_id", userId)
+      .is("deleted_at", null);
 
     if (error) throw error;
 
@@ -34,7 +35,8 @@ export class DashboardRepository {
       .from("financial_records")
       .select("category, amount, type")
       .eq("user_id", userId)
-      .eq("type", "expense");
+      .eq("type", "expense")
+      .is("deleted_at", null);
 
     if (error) throw error;
 
@@ -61,6 +63,7 @@ export class DashboardRepository {
       .from("financial_records")
       .select("date, type, amount")
       .eq("user_id", userId)
+      .is("deleted_at", null)
       .order("date", { ascending: true });
 
     if (error) throw error;
@@ -96,6 +99,7 @@ export class DashboardRepository {
       .from("financial_records")
       .select("*")
       .eq("user_id", userId)
+      .is("deleted_at", null)
       .order("created_at", { ascending: false })
       .limit(limit);
 

@@ -31,13 +31,22 @@ export class RecordRepository {
     return record as FinancialRecord;
   }
 
-  async findById(id: string, userId: string): Promise<FinancialRecord | null> {
-    const { data, error } = await this.db
+  async findById(
+    id: string,
+    userId: string,
+    includeDeleted: boolean = false,
+  ): Promise<FinancialRecord | null> {
+    let query = this.db
       .from("financial_records")
       .select("*")
       .eq("id", id)
-      .eq("user_id", userId)
-      .single();
+      .eq("user_id", userId);
+
+    if (!includeDeleted) {
+      query = query.is("deleted_at", null);
+    }
+
+    const { data, error } = await query.single();
 
     if (error && error.code !== "PGRST116") throw error;
     return data as FinancialRecord | null;
@@ -55,6 +64,11 @@ export class RecordRepository {
       .from("financial_records")
       .select("*", { count: "exact" })
       .eq("user_id", userId);
+
+    // Filter out soft-deleted records by default
+    if (!filters?.includeDeleted) {
+      query = query.is("deleted_at", null);
+    }
 
     if (filters?.type) {
       query = query.eq("type", filters.type);
@@ -108,6 +122,44 @@ export class RecordRepository {
   }
 
   async delete(id: string, userId: string): Promise<void> {
+    const { error } = await this.db
+      .from("financial_records")
+      .update({ deleted_at: new Date().toISOString() })
+      .eq("id", id)
+      .eq("user_id", userId);
+
+    if (error) throw error;
+  }
+
+  async restore(id: string, userId: string): Promise<FinancialRecord> {
+    // First verify the record is actually deleted
+    const { data: deletedRecord } = await this.db
+      .from("financial_records")
+      .select("*")
+      .eq("id", id)
+      .eq("user_id", userId)
+      .not("deleted_at", "is", null)
+      .single();
+
+    if (!deletedRecord) {
+      throw new NotFoundError("Deleted record not found");
+    }
+
+    // Now restore it
+    const { data: record, error } = await this.db
+      .from("financial_records")
+      .update({ deleted_at: null })
+      .eq("id", id)
+      .eq("user_id", userId)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    return record as FinancialRecord;
+  }
+
+  async hardDelete(id: string, userId: string): Promise<void> {
     const { error } = await this.db
       .from("financial_records")
       .delete()

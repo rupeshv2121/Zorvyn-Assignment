@@ -8,6 +8,7 @@ export interface FinancialRecord {
   category: string;
   date: string;
   notes?: string;
+  deleted_at?: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -33,4 +34,5 @@ export interface RecordFilters {
   category?: string;
   dateFrom?: string;
   dateTo?: string;
+  includeDeleted?: boolean;
 }

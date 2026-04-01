@@ -45,14 +45,18 @@ export class RecordController {
   ): Promise<void> {
     try {
       const userId = req.user!.userId;
+      const userRole = req.user!.role;
       const page = Number(req.query.page) || 1;
       const limit = Number(req.query.limit) || 10;
+      const includeDeleted =
+        req.query.includeDeleted === "true" && userRole === "admin";
 
       const filters = {
         type: req.query.type as "income" | "expense" | undefined,
         category: req.query.category as string | undefined,
         dateFrom: req.query.dateFrom as string | undefined,
         dateTo: req.query.dateTo as string | undefined,
+        includeDeleted,
       };
 
       const { records, total } = await recordService.getAllRecords(
@@ -98,6 +102,51 @@ export class RecordController {
       await recordService.deleteRecord(id, userId);
 
       successResponse(res, { message: "Record deleted successfully" });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async restoreRecord(
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> {
+    try {
+      const userId = req.user!.userId;
+      const { id } = req.params;
+
+      const record = await recordService.restoreRecord(id, userId);
+
+      successResponse(res, record);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async deleteRecordPermanently(
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> {
+    try {
+      const userId = req.user!.userId;
+      const userRole = req.user!.role;
+      const { id } = req.params;
+
+      // Only admins can permanently delete
+      if (userRole !== "admin") {
+        res
+          .status(403)
+          .json({
+            error: "Forbidden: Only admins can permanently delete records",
+          });
+        return;
+      }
+
+      await recordService.deleteRecordPermanently(id, userId);
+
+      successResponse(res, { message: "Record permanently deleted" });
     } catch (error) {
       next(error);
     }
