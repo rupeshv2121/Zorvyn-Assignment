@@ -10,6 +10,24 @@ import routes from "./routes";
 
 export const createApp = (): Application => {
   const app = express();
+  const allowedOrigins = env.CORS_ORIGINS ?? [env.FRONTEND_URL];
+  const corsOptions: cors.CorsOptions = {
+    origin: (origin, callback) => {
+      // Allow non-browser clients like curl/Postman (no Origin header)
+      if (!origin) {
+        callback(null, true);
+        return;
+      }
+
+      if (allowedOrigins.includes(origin)) {
+        callback(null, true);
+        return;
+      }
+
+      callback(new Error(`CORS blocked for origin: ${origin}`));
+    },
+    credentials: true,
+  };
 
   // Security middleware
   app.use(
@@ -17,12 +35,8 @@ export const createApp = (): Application => {
       contentSecurityPolicy: false, // Disable CSP for Swagger UI
     }),
   );
-  app.use(
-    cors({
-      origin: env.FRONTEND_URL,
-      credentials: true,
-    }),
-  );
+  app.use(cors(corsOptions));
+  app.options("*", cors(corsOptions));
 
   // Body parsing middleware
   app.use(express.json());

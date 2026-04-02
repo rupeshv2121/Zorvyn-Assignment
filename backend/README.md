@@ -69,6 +69,7 @@ backend/
    - `JWT_ACCESS_SECRET`: Strong random secret for access tokens
    - `JWT_REFRESH_SECRET`: Strong random secret for refresh tokens
    - `FRONTEND_URL`: Your frontend URL (for CORS)
+   - `CORS_ORIGINS` (optional): Comma-separated allowed origins (overrides `FRONTEND_URL`)
 
 4. **Setup database:**
    
@@ -397,6 +398,7 @@ Set in deployment platform:
 - `JWT_ACCESS_SECRET`
 - `JWT_REFRESH_SECRET`
 - `FRONTEND_URL` (your deployed frontend URL)
+- `CORS_ORIGINS` (optional, comma-separated allowed origins)
 
 ## 🧪 Testing
 

@@ -36,6 +36,37 @@ const envSchema = z.object({
 
   // CORS
   FRONTEND_URL: z.string().url().default("http://localhost:5173"),
+  CORS_ORIGINS: z
+    .string()
+    .optional()
+    .transform((value, ctx) => {
+      if (!value) {
+        return undefined;
+      }
+
+      const origins = value
+        .split(",")
+        .map((origin) => origin.trim())
+        .filter(Boolean);
+
+      if (origins.length === 0) {
+        return undefined;
+      }
+
+      for (const origin of origins) {
+        try {
+          new URL(origin);
+        } catch {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: `Invalid CORS origin URL: ${origin}`,
+          });
+          return z.NEVER;
+        }
+      }
+
+      return origins;
+    }),
 
   // Rate Limiting
   RATE_LIMIT_WINDOW_MS: z.string().transform(Number).default("900000"),
