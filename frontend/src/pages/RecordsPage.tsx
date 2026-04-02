@@ -9,7 +9,7 @@ import { formatCurrency } from '../utils/formatters';
 export const RecordsPage: React.FC = () => {
   const [rawFilters, setRawFilters] = useState({});
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+  const [pageSize] = useState(10);
 
   const filters = Object.fromEntries(
     Object.entries(rawFilters).filter(([, value]) => value !== '')

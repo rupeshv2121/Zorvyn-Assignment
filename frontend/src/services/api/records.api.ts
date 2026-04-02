@@ -1,10 +1,10 @@
-import { apiClient, ApiResponse } from './client';
+import { apiClient, ApiResponse } from "./client";
 
 export interface FinancialRecord {
   id: string;
   user_id: string;
   amount: number;
-  type: 'income' | 'expense';
+  type: "income" | "expense";
   category: string;
   date: string;
   notes?: string;
@@ -14,7 +14,7 @@ export interface FinancialRecord {
 
 export interface CreateRecordRequest {
   amount: number;
-  type: 'income' | 'expense';
+  type: "income" | "expense";
   category: string;
   date: string;
   notes?: string;
@@ -22,7 +22,7 @@ export interface CreateRecordRequest {
 
 export interface UpdateRecordRequest {
   amount?: number;
-  type?: 'income' | 'expense';
+  type?: "income" | "expense";
   category?: string;
   date?: string;
   notes?: string;
@@ -31,7 +31,7 @@ export interface UpdateRecordRequest {
 export interface GetRecordsParams {
   page?: number;
   limit?: number;
-  type?: 'income' | 'expense';
+  type?: "income" | "expense";
   category?: string;
   dateFrom?: string;
   dateTo?: string;
@@ -49,25 +49,44 @@ export interface GetRecordsResponse {
 
 export const recordsApi = {
   create: async (data: CreateRecordRequest): Promise<FinancialRecord> => {
-    const response = await apiClient.post<ApiResponse<FinancialRecord>>('/records', data);
+    const response = await apiClient.post<ApiResponse<FinancialRecord>>(
+      "/records",
+      data,
+    );
     return response.data.data!;
   },
 
   getAll: async (params?: GetRecordsParams): Promise<GetRecordsResponse> => {
-    const response = await apiClient.get<ApiResponse<FinancialRecord[]>>('/records', { params });
+    const response = await apiClient.get<ApiResponse<FinancialRecord[]>>(
+      "/records",
+      { params },
+    );
     return {
-      data: response.data.data!,
-      meta: response.data.meta!,
+      data: response.data.data || [],
+      meta: {
+        page: response.data.meta?.page || 1,
+        limit: response.data.meta?.limit || 10,
+        total: response.data.meta?.total || 0,
+        totalPages: response.data.meta?.totalPages || 0,
+      },
     };
   },
 
   getById: async (id: string): Promise<FinancialRecord> => {
-    const response = await apiClient.get<ApiResponse<FinancialRecord>>(`/records/${id}`);
+    const response = await apiClient.get<ApiResponse<FinancialRecord>>(
+      `/records/${id}`,
+    );
     return response.data.data!;
   },
 
-  update: async (id: string, data: UpdateRecordRequest): Promise<FinancialRecord> => {
-    const response = await apiClient.patch<ApiResponse<FinancialRecord>>(`/records/${id}`, data);
+  update: async (
+    id: string,
+    data: UpdateRecordRequest,
+  ): Promise<FinancialRecord> => {
+    const response = await apiClient.patch<ApiResponse<FinancialRecord>>(
+      `/records/${id}`,
+      data,
+    );
     return response.data.data!;
   },
 
