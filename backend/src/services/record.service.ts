@@ -57,7 +57,7 @@ export class RecordService {
     // Verify deleted record exists
     const record = await recordRepository.findById(id, userId, true);
 
-    if (!record || !record.deleted_at) {
+    if (!record || !record.deletedAt) {
       throw new NotFoundError("Deleted record not found");
     }
 

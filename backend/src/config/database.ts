@@ -6,6 +6,12 @@ let supabase: SupabaseClient;
 
 export const initializeDatabase = (): SupabaseClient => {
   try {
+    if (!env.SUPABASE_URL || !env.SUPABASE_SERVICE_ROLE_KEY) {
+      throw new Error(
+        "SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are required to initialize Supabase client",
+      );
+    }
+
     supabase = createClient(env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY, {
       auth: {
         autoRefreshToken: false,

@@ -19,7 +19,7 @@ export class AuthService {
     // Create user
     const user = await userRepository.create({
       ...data,
-      password_hash: passwordHash,  // Repository expects snake_case for DB insert
+      password_hash: passwordHash, // Repository expects snake_case for DB insert
     });
 
     // Generate tokens

@@ -1,4 +1,5 @@
 import { getPrismaClient } from "../config";
+import { Prisma } from "@prisma/client";
 import {
   CreateRecordDTO,
   FinancialRecord,
@@ -9,6 +10,14 @@ import { NotFoundError } from "../utils/errors";
 
 export class RecordRepository {
   private prisma = getPrismaClient();
+  private toFinancialRecord(
+    record: Prisma.FinancialRecordGetPayload<Record<string, never>>,
+  ): FinancialRecord {
+    return {
+      ...record,
+      amount: Number(record.amount),
+    };
+  }
 
   async create(
     userId: string,
@@ -25,7 +34,7 @@ export class RecordRepository {
       },
     });
 
-    return record as FinancialRecord;
+    return this.toFinancialRecord(record);
   }
 
   async findById(
@@ -43,7 +52,7 @@ export class RecordRepository {
       where,
     });
 
-    return record as FinancialRecord | null;
+    return record ? this.toFinancialRecord(record) : null;
   }
 
   async findAll(
@@ -90,7 +99,7 @@ export class RecordRepository {
     ]);
 
     return {
-      records: records as FinancialRecord[],
+      records: records.map((record) => this.toFinancialRecord(record)),
       total,
     };
   }
@@ -113,7 +122,7 @@ export class RecordRepository {
         data: updateData,
       });
 
-      return record as FinancialRecord;
+      return this.toFinancialRecord(record);
     } catch (error: any) {
       if (error.code === "P2025") {
         throw new NotFoundError("Record not found");
@@ -149,7 +158,7 @@ export class RecordRepository {
       data: { deletedAt: null },
     });
 
-    return record as FinancialRecord;
+    return this.toFinancialRecord(record);
   }
 
   async hardDelete(id: string, userId: string): Promise<void> {

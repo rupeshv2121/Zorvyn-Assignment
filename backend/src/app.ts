@@ -2,7 +2,9 @@ import compression from "compression";
 import cors from "cors";
 import express, { Application } from "express";
 import helmet from "helmet";
+import swaggerUi from "swagger-ui-express";
 import { env, logger } from "./config";
+import { swaggerSpec } from "./config/swagger";
 import { apiLimiter, errorHandler, notFoundHandler } from "./middleware";
 import routes from "./routes";
 
@@ -10,7 +12,11 @@ export const createApp = (): Application => {
   const app = express();
 
   // Security middleware
-  app.use(helmet());
+  app.use(
+    helmet({
+      contentSecurityPolicy: false, // Disable CSP for Swagger UI
+    }),
+  );
   app.use(
     cors({
       origin: env.FRONTEND_URL,
@@ -37,6 +43,22 @@ export const createApp = (): Application => {
   // Health check endpoint
   app.get("/health", (_req, res) => {
     res.status(200).json({ status: "ok", timestamp: new Date().toISOString() });
+  });
+
+  // Swagger API Documentation
+  app.use(
+    "/api-docs",
+    swaggerUi.serve,
+    swaggerUi.setup(swaggerSpec, {
+      customCss: ".swagger-ui .topbar { display: none }",
+      customSiteTitle: "Finance Dashboard API Documentation",
+    }),
+  );
+
+  // Swagger JSON
+  app.get("/api-docs.json", (_req, res) => {
+    res.setHeader("Content-Type", "application/json");
+    res.send(swaggerSpec);
   });
 
   // API routes
