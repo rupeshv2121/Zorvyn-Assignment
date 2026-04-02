@@ -1,19 +1,21 @@
-import { getDatabase } from "../config";
+import { getPrismaClient } from "../config";
 import { CategoryBreakdown, DashboardSummary, MonthlyTrend } from "../types";
 
 export class DashboardRepository {
-  private db = getDatabase();
+  private prisma = getPrismaClient();
 
   async getSummary(userId: string): Promise<DashboardSummary> {
-    const { data, error } = await this.db
-      .from("financial_records")
-      .select("type, amount")
-      .eq("user_id", userId)
-      .is("deleted_at", null);
+    const records = await this.prisma.financialRecord.findMany({
+      where: {
+        userId,
+        deletedAt: null,
+      },
+      select: {
+        type: true,
+        amount: true,
+      },
+    });
 
-    if (error) throw error;
-
-    const records = data || [];
     const totalIncome = records
       .filter((r) => r.type === "income")
       .reduce((sum, r) => sum + Number(r.amount), 0);
@@ -31,16 +33,18 @@ export class DashboardRepository {
   }
 
   async getCategoryBreakdown(userId: string): Promise<CategoryBreakdown[]> {
-    const { data, error } = await this.db
-      .from("financial_records")
-      .select("category, amount, type")
-      .eq("user_id", userId)
-      .eq("type", "expense")
-      .is("deleted_at", null);
+    const records = await this.prisma.financialRecord.findMany({
+      where: {
+        userId,
+        type: "expense",
+        deletedAt: null,
+      },
+      select: {
+        category: true,
+        amount: true,
+      },
+    });
 
-    if (error) throw error;
-
-    const records = data || [];
     const categoryTotals: { [key: string]: number } = {};
     let total = 0;
 
@@ -59,21 +63,28 @@ export class DashboardRepository {
   }
 
   async getMonthlyTrends(userId: string): Promise<MonthlyTrend[]> {
-    const { data, error } = await this.db
-      .from("financial_records")
-      .select("date, type, amount")
-      .eq("user_id", userId)
-      .is("deleted_at", null)
-      .order("date", { ascending: true });
+    const records = await this.prisma.financialRecord.findMany({
+      where: {
+        userId,
+        deletedAt: null,
+      },
+      select: {
+        date: true,
+        type: true,
+        amount: true,
+      },
+      orderBy: {
+        date: "asc",
+      },
+    });
 
-    if (error) throw error;
-
-    const records = data || [];
     const monthlyData: { [key: string]: { income: number; expense: number } } =
       {};
 
     records.forEach((record) => {
-      const month = record.date.substring(0, 7); // YYYY-MM
+      const date = new Date(record.date);
+      const month = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`; // YYYY-MM
+
       if (!monthlyData[month]) {
         monthlyData[month] = { income: 0, expense: 0 };
       }
@@ -95,16 +106,18 @@ export class DashboardRepository {
   }
 
   async getRecentRecords(userId: string, limit: number = 10) {
-    const { data, error } = await this.db
-      .from("financial_records")
-      .select("*")
-      .eq("user_id", userId)
-      .is("deleted_at", null)
-      .order("created_at", { ascending: false })
-      .limit(limit);
+    const records = await this.prisma.financialRecord.findMany({
+      where: {
+        userId,
+        deletedAt: null,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+      take: limit,
+    });
 
-    if (error) throw error;
-    return data || [];
+    return records;
   }
 }
 

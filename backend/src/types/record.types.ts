@@ -2,15 +2,15 @@ export type RecordType = "income" | "expense";
 
 export interface FinancialRecord {
   id: string;
-  user_id: string;
+  userId: string; // Changed from user_id
   amount: number;
   type: RecordType;
   category: string;
-  date: string;
-  notes?: string;
-  deleted_at?: string | null;
-  created_at: string;
-  updated_at: string;
+  date: Date; // Changed from string to Date
+  notes?: string | null;
+  deletedAt?: Date | null; // Changed from deleted_at and string to Date
+  createdAt: Date; // Changed from created_at and string to Date
+  updatedAt: Date; // Changed from updated_at and string to Date
 }
 
 export interface CreateRecordDTO {

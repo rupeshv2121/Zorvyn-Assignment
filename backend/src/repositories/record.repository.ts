@@ -1,4 +1,4 @@
-import { getDatabase } from "../config";
+import { getPrismaClient } from "../config";
 import {
   CreateRecordDTO,
   FinancialRecord,
@@ -8,26 +8,23 @@ import {
 import { NotFoundError } from "../utils/errors";
 
 export class RecordRepository {
-  private db = getDatabase();
+  private prisma = getPrismaClient();
 
   async create(
     userId: string,
     data: CreateRecordDTO,
   ): Promise<FinancialRecord> {
-    const { data: record, error } = await this.db
-      .from("financial_records")
-      .insert({
-        user_id: userId,
+    const record = await this.prisma.financialRecord.create({
+      data: {
+        userId,
         amount: data.amount,
         type: data.type,
         category: data.category,
-        date: data.date,
+        date: new Date(data.date),
         notes: data.notes || null,
-      })
-      .select()
-      .single();
+      },
+    });
 
-    if (error) throw error;
     return record as FinancialRecord;
   }
 
@@ -36,20 +33,17 @@ export class RecordRepository {
     userId: string,
     includeDeleted: boolean = false,
   ): Promise<FinancialRecord | null> {
-    let query = this.db
-      .from("financial_records")
-      .select("*")
-      .eq("id", id)
-      .eq("user_id", userId);
+    const where: any = { id, userId };
 
     if (!includeDeleted) {
-      query = query.is("deleted_at", null);
+      where.deletedAt = null;
     }
 
-    const { data, error } = await query.single();
+    const record = await this.prisma.financialRecord.findFirst({
+      where,
+    });
 
-    if (error && error.code !== "PGRST116") throw error;
-    return data as FinancialRecord | null;
+    return record as FinancialRecord | null;
   }
 
   async findAll(
@@ -58,43 +52,46 @@ export class RecordRepository {
     limit: number = 10,
     filters?: RecordFilters,
   ): Promise<{ records: FinancialRecord[]; total: number }> {
-    const offset = (page - 1) * limit;
+    const skip = (page - 1) * limit;
 
-    let query = this.db
-      .from("financial_records")
-      .select("*", { count: "exact" })
-      .eq("user_id", userId);
+    const where: any = { userId };
 
     // Filter out soft-deleted records by default
     if (!filters?.includeDeleted) {
-      query = query.is("deleted_at", null);
+      where.deletedAt = null;
     }
 
     if (filters?.type) {
-      query = query.eq("type", filters.type);
+      where.type = filters.type;
     }
 
     if (filters?.category) {
-      query = query.eq("category", filters.category);
+      where.category = filters.category;
     }
 
-    if (filters?.dateFrom) {
-      query = query.gte("date", filters.dateFrom);
+    if (filters?.dateFrom || filters?.dateTo) {
+      where.date = {};
+      if (filters.dateFrom) {
+        where.date.gte = new Date(filters.dateFrom);
+      }
+      if (filters.dateTo) {
+        where.date.lte = new Date(filters.dateTo);
+      }
     }
 
-    if (filters?.dateTo) {
-      query = query.lte("date", filters.dateTo);
-    }
-
-    const { data, error, count } = await query
-      .order("date", { ascending: false })
-      .range(offset, offset + limit - 1);
-
-    if (error) throw error;
+    const [records, total] = await Promise.all([
+      this.prisma.financialRecord.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy: { date: "desc" },
+      }),
+      this.prisma.financialRecord.count({ where }),
+    ]);
 
     return {
-      records: data as FinancialRecord[],
-      total: count || 0,
+      records: records as FinancialRecord[],
+      total,
     };
   }
 
@@ -103,70 +100,62 @@ export class RecordRepository {
     userId: string,
     data: UpdateRecordDTO,
   ): Promise<FinancialRecord> {
-    const { data: record, error } = await this.db
-      .from("financial_records")
-      .update(data)
-      .eq("id", id)
-      .eq("user_id", userId)
-      .select()
-      .single();
+    try {
+      const updateData: any = {};
+      if (data.amount !== undefined) updateData.amount = data.amount;
+      if (data.type !== undefined) updateData.type = data.type;
+      if (data.category !== undefined) updateData.category = data.category;
+      if (data.date !== undefined) updateData.date = new Date(data.date);
+      if (data.notes !== undefined) updateData.notes = data.notes;
 
-    if (error) {
-      if (error.code === "PGRST116") {
+      const record = await this.prisma.financialRecord.update({
+        where: { id, userId },
+        data: updateData,
+      });
+
+      return record as FinancialRecord;
+    } catch (error: any) {
+      if (error.code === "P2025") {
         throw new NotFoundError("Record not found");
       }
       throw error;
     }
-
-    return record as FinancialRecord;
   }
 
   async delete(id: string, userId: string): Promise<void> {
-    const { error } = await this.db
-      .from("financial_records")
-      .update({ deleted_at: new Date().toISOString() })
-      .eq("id", id)
-      .eq("user_id", userId);
-
-    if (error) throw error;
+    await this.prisma.financialRecord.update({
+      where: { id, userId },
+      data: { deletedAt: new Date() },
+    });
   }
 
   async restore(id: string, userId: string): Promise<FinancialRecord> {
     // First verify the record is actually deleted
-    const { data: deletedRecord } = await this.db
-      .from("financial_records")
-      .select("*")
-      .eq("id", id)
-      .eq("user_id", userId)
-      .not("deleted_at", "is", null)
-      .single();
+    const deletedRecord = await this.prisma.financialRecord.findFirst({
+      where: {
+        id,
+        userId,
+        deletedAt: { not: null },
+      },
+    });
 
     if (!deletedRecord) {
       throw new NotFoundError("Deleted record not found");
     }
 
     // Now restore it
-    const { data: record, error } = await this.db
-      .from("financial_records")
-      .update({ deleted_at: null })
-      .eq("id", id)
-      .eq("user_id", userId)
-      .select()
-      .single();
-
-    if (error) throw error;
+    const record = await this.prisma.financialRecord.update({
+      where: { id, userId },
+      data: { deletedAt: null },
+    });
 
     return record as FinancialRecord;
   }
 
   async hardDelete(id: string, userId: string): Promise<void> {
-    const { error } = await this.db
-      .from("financial_records")
-      .delete()
-      .eq("id", id)
-      .eq("user_id", userId);
-
-    if (error) throw error;
+    await this.prisma.financialRecord.delete({
+      where: { id, userId },
+    });
   }
 }
 

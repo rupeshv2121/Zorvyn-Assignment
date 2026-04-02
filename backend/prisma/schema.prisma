@@ -1,29 +1,28 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
-// =============================================
 // USERS TABLE
-// =============================================
 model User {
-  id           String     @id @default(uuid())
-  email        String     @unique
-  passwordHash String     @map("password_hash")
-  role         UserRole   @default(viewer)
+  id           String     @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  email        String     @unique @db.VarChar(255)
+  passwordHash String     @map("password_hash") @db.VarChar(255)
+  role         UserRole
   status       UserStatus @default(active)
-  createdAt    DateTime   @default(now()) @map("created_at")
-  updatedAt    DateTime   @updatedAt @map("updated_at")
+  createdAt    DateTime   @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt    DateTime   @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
 
   // Relations
-  records FinancialRecord[]
+  financialRecords FinancialRecord[]
 
+  @@index([email], map: "idx_users_email")
+  @@index([role], map: "idx_users_role")
+  @@index([status], map: "idx_users_status")
   @@map("users")
 }
 
@@ -38,31 +37,29 @@ enum UserStatus {
   inactive
 }
 
-// =============================================
 // FINANCIAL RECORDS TABLE
-// =============================================
 model FinancialRecord {
-  id        String     @id @default(uuid())
-  userId    String     @map("user_id")
+  id        String     @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  userId    String     @map("user_id") @db.Uuid
   amount    Decimal    @db.Decimal(15, 2)
   type      RecordType
-  category  String
+  category  String     @db.VarChar(100)
   date      DateTime   @db.Date
-  notes     String?
-  deletedAt DateTime?  @map("deleted_at")
-  createdAt DateTime   @default(now()) @map("created_at")
-  updatedAt DateTime   @updatedAt @map("updated_at")
+  notes     String?    @db.Text
+  deletedAt DateTime?  @map("deleted_at") @db.Timestamptz
+  createdAt DateTime   @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime   @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
 
   // Relations
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  // Indexes
-  @@index([userId])
-  @@index([userId, date(sort: Desc)])
-  @@index([category])
-  @@index([type])
-  @@index([userId, type, date(sort: Desc)])
-  @@index([deletedAt])
+  // Indexes (matching schema.sql)
+  @@index([userId], map: "idx_records_user_id")
+  @@index([userId, date(sort: Desc)], map: "idx_records_user_date")
+  @@index([category], map: "idx_records_category")
+  @@index([type], map: "idx_records_type")
+  @@index([userId, type, date(sort: Desc)], map: "idx_records_user_type_date")
+  @@index([deletedAt], map: "idx_records_deleted_at")
   @@map("financial_records")
 }
 

@@ -6,14 +6,14 @@ let supabase: SupabaseClient;
 
 export const initializeDatabase = (): SupabaseClient => {
   try {
-    supabase = createClient(env.SUPABASE_URL, env.SUPABASE_ANON_KEY, {
+    supabase = createClient(env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY, {
       auth: {
         autoRefreshToken: false,
         persistSession: false,
       },
     });
 
-    logger.info("✅ Database connection initialized");
+    logger.info("✅ Database connection initialized (service role)");
     return supabase;
   } catch (error) {
     logger.error("❌ Failed to initialize database:", error);

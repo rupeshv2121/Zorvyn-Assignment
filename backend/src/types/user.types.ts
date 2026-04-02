@@ -4,11 +4,11 @@ export type UserStatus = "active" | "inactive";
 export interface User {
   id: string;
   email: string;
-  password_hash: string;
+  passwordHash: string; // Changed from password_hash to match Prisma
   role: UserRole;
   status: UserStatus;
-  created_at: string;
-  updated_at: string;
+  createdAt: Date; // Changed from created_at and string to Date
+  updatedAt: Date; // Changed from updated_at and string to Date
 }
 
 export interface UserDTO {

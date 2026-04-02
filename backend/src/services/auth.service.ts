@@ -14,12 +14,12 @@ export class AuthService {
     data: CreateUserDTO,
   ): Promise<{ user: UserDTO; accessToken: string; refreshToken: string }> {
     // Hash password
-    const password_hash = await hashPassword(data.password);
+    const passwordHash = await hashPassword(data.password);
 
     // Create user
     const user = await userRepository.create({
       ...data,
-      password_hash,
+      password_hash: passwordHash,  // Repository expects snake_case for DB insert
     });
 
     // Generate tokens
@@ -59,7 +59,7 @@ export class AuthService {
     }
 
     // Verify password
-    const isValidPassword = await comparePassword(password, user.password_hash);
+    const isValidPassword = await comparePassword(password, user.passwordHash);
 
     if (!isValidPassword) {
       throw new UnauthorizedError("Invalid credentials");

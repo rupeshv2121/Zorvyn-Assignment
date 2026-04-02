@@ -1,10 +1,10 @@
 import { createApp } from "./app";
-import { env, initializeDatabase, logger } from "./config";
+import { disconnectPrisma, env, initializePrisma, logger } from "./config";
 
 const startServer = async () => {
   try {
-    // Initialize database
-    initializeDatabase();
+    // Initialize Prisma database
+    await initializePrisma();
 
     // Create Express app
     const app = createApp();
@@ -18,11 +18,13 @@ const startServer = async () => {
     });
 
     // Graceful shutdown
-    const gracefulShutdown = (signal: string) => {
+    const gracefulShutdown = async (signal: string) => {
       logger.info(`\n${signal} received, closing server gracefully...`);
 
-      server.close(() => {
+      server.close(async () => {
         logger.info("Server closed");
+        await disconnectPrisma();
+        logger.info("Database connection closed");
         process.exit(0);
       });
 

@@ -9,18 +9,24 @@ const envSchema = z.object({
     .default("development"),
   PORT: z.string().transform(Number).default("5000"),
 
-  // Supabase
+  // Database (Prisma)
+  DATABASE_URL: z.string().url(),
+
+  // Supabase (Optional - only if using Supabase features)
   SUPABASE_URL: z
     .string()
     .url()
+    .optional()
     .refine(
-      (value) => value.startsWith("http://") || value.startsWith("https://"),
+      (value) =>
+        !value || value.startsWith("http://") || value.startsWith("https://"),
       {
         message:
           "Must be a valid HTTP or HTTPS URL (for example: https://<project-ref>.supabase.co)",
       },
     ),
-  SUPABASE_ANON_KEY: z.string().min(1),
+  SUPABASE_ANON_KEY: z.string().min(1).optional(),
+  SUPABASE_SERVICE_ROLE_KEY: z.string().min(1).optional(),
 
   // JWT
   JWT_ACCESS_SECRET: z.string().min(32),
